@@ -51,8 +51,9 @@ endif()
 
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
-
+if (NOT OS2)
 find_package(PkgConfig REQUIRED)
+endif (NOT OS2)
 
 pkg_check_modules(hunspell QUIET hunspell)
 if(hunspell_FOUND)
