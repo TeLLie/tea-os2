@@ -1,0 +1,69 @@
+
+переопределить контекстное меню!
+
+* темы оформления в Win32 глючат при стиле интерфейса Windows XP //так и должно быть
+
+make single application with Dbus?
+
+опять single app не пашет при открытии файлов из thunar
+
+add Qt6 to Meson or drop Meson support at all?
+
+show empty spaces (at EOL? for Markdown)
+
+Chess visualizer window
+"Места" в ФП
+
+remove lout support?
+
+https://api.kde.org/frameworks/syntax-highlighting/html/index.html
+
+*вернуться к SVG-иконкам?
+
+ПЕЧАТЬ НЕ РАБОТАЕТ под вындой!
+
+Фильтр - Больше размера > - удаляет всё?
+
+OS/2::File manager, double click on folders work with the right double click only
+
+cmake dist creates wrong tarball that cannot be build with meson
+
+JAMSpell support? (https://github.com/bakwc/JamSpell)
+
+при повторении последней функции, сендер-ту становится от пункта меню "повторить"
+
+избранное для ЗПВ
+
+если перенос строк выключен в настройках, то из меню Вид перенос строк не работает
+при переключении темы, иконки меняются только после перезагрузки TEA
+
+file compare
+filesToolbar странно меняет размер иконки
+спеллчекер плохо работает с кавычками елочкой
+вставка картинки как base64?
+в сборке Qt5, шорткаты с Alt стали языко-зависимыми?
+CSound, Ada, gas, List hl
+массовая перекодировка выделенных файлов. окно ИЗ - В
+вытащить меню таблиц мультизамен в режим фприказчика, проверить обработку
+batch-обработка картинок: обрезка, масштабирование, поворот, зеркало?
+при закрытии календарной записи будет автоматический возврат на панель календаря
+autosave bookmarks?
+autocompletion
+broken local links checking
+Highlight all search results
+gradient colorization in palettes
+"entity to text" function
+autoscroll //useful for musicians or youtube bloggers. define the speed in bpm?
+numbers into words
+ctags support
+units conversion
+unicode table window
+split document panel
+play the chords by name, i.e. select AmDm, then use something like "Play melody"
+chords to tabs, heh heh
+parse the compiler output, goto the error by clicking at logmemo
+0-9 markers
+goto start/end of the code block
+gz file save?
+
+использовать libretta::CPainFile вместо QSettings?

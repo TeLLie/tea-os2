@@ -1,0 +1,119 @@
+QWidget
+{
+  background-color: #9a656c;
+  color:  white;
+}
+
+
+QLineEdit
+{
+  border: 1px solid gray;
+  border-radius: 6px;
+  background-color: #704349;
+  color: black;
+  selection-background-color: darkgray;
+}
+
+
+QPlainTextEdit
+{
+  border-radius: 15px;
+}
+
+
+QMenu
+{
+   background-color: #8c727d;
+   border: 1px solid grey;
+}
+
+
+QMenu::item
+{
+  background-color: transparent;
+}
+
+
+QMenu::item:selected
+{
+  background-color: #613c41;
+}
+
+
+QTreeView
+{
+  alternate-background-color: #4f6384;
+}
+
+
+QHeaderView::section {
+    background-color: #90476c;
+    color: white;
+    padding-left: 4px;
+    border: 1px solid #6c6c6c;
+}
+
+QListView
+{
+  alternate-background-color: #4f6384;
+}
+
+
+QScrollBar:vertical
+{
+  width: 24px;
+  border: 1px solid grey;
+}
+
+
+QTabWidget::pane
+{
+  border: 0px;
+}
+
+
+QTabWidget::tab-bar#tab_editor
+{
+  alignment: center;
+  background-color: #9a656c;
+  color:  black;
+}
+
+
+QTabBar::tab {
+  background: #9a656c; 
+  border: 1px solid lightgray; 
+  padding: 10px;
+} 
+
+QTabBar::tab:selected { 
+  background: #9a656c; 
+  margin-bottom: -1px; 
+  color: #e6e6c6;
+}
+
+QPushButton {
+    border: 2px solid #8f8f91;
+    border-radius: 6px;
+    background-color: #aaaa7f;
+    min-width: 80px;
+}
+
+QPushButton:pressed {
+     background-color: #aaaa00;
+}
+
+QPushButton:flat {
+    border: none; /* no border for a flat push button */
+}
+
+QPushButton:hover:!pressed
+{
+  border: 2px solid #ffaaff;
+  background-color: #c6c694;
+
+}
+
+QPushButton:default {
+    border-color: navy; /* make the default button prominent */
+}
