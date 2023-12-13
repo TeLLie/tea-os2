@@ -101,6 +101,13 @@ COMMAND git archive --format=tar --prefix=${PROJECT}-${PROJECT_VERSION_MAJOR}.${
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
+if(OS2)
+enable_language(RC)
+set(tea_SRCS ${tea_SRCS} ${CMAKE_SOURCE_DIR}/icons/os2app.rc)
+set_source_files_properties(${CMAKE_SOURCE_DIR}/icons/os2app.rc PROPERTIES LANGUAGE RC)
+include_directories(${CMAKE_SOURCE_DIR}/icons )
+endif(OS2)
+
 
 add_executable(tea ${tea_SRCS} ${QT_RESOURCES})
 
@@ -215,7 +222,7 @@ endif()
 
 if(UNIX OR MINGW OR OS2)
     find_package(ZLIB REQUIRED)
-else(UNIX OR MINGW)
+else(UNIX OR MINGW OR OS2)
     set(ZLIB_INCLUDE_DIRS "${QT_ROOT}/src/3rdparty/zlib" CACHE STRING "Path to ZLIB headers of Qt")
     set(ZLIB_LIBRARIES "")
     if(NOT EXISTS "${ZLIB_INCLUDE_DIRS}/zlib.h")
@@ -241,7 +248,13 @@ endif()
 
 target_link_libraries(tea Qt::Widgets Qt::Core)
 
-
+if(OS2)
+  set_target_properties(tea PROPERTIES
+    OS2_DEF_VENDOR "TeLLeRBoP"
+    OS2_DEF_PATCH "${TEA_VERSION_PATCH}"
+    OS2_DEF_VERSION "${TEA_VERSION}"
+    OS2_DEF_EXEType "WINDOWAPI")
+endif(OS2)
 
 install (TARGETS tea DESTINATION bin)
 install (FILES ${tea_ICONSVG} DESTINATION share/icons/hicolor/scalable/apps)
