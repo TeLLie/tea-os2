@@ -80,6 +80,11 @@ void CAspellchecker::load_dict()
   aspell_config_replace (spell_config, "encoding", "UTF-8");
 
 #if defined(Q_OS_WIN) || defined(Q_OS_OS2)
+#if defined(Q_OS_OS2)
+ // on OS/2 we overwrite the dictionary only, if not in an rpm installed system
+if (!getenv("UNIXROOT"))
+{
+#endif
 
   QString data_path = dir_dicts + "\\data";
   QString dict_path = dir_dicts + "\\dict";
@@ -90,6 +95,9 @@ void CAspellchecker::load_dict()
   aspell_config_replace (spell_config, "data-dir", data_path.toLatin1().data());
   aspell_config_replace (spell_config, "dict-dir", dict_path.toLatin1().data());
 
+#if defined(Q_OS_OS2)
+}
+#endif
 #endif
 
   ret = new_aspell_speller (spell_config);
