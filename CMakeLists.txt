@@ -24,9 +24,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 COMPONENTS Core5Compat REQUIRED)
 endif()
 
-
+if (NOT OS2)
 qt_standard_project_setup()
-
+endif (NOT OS2)
 
 set(PROJECT "tea-qt")
 project ($PROJECT VERSION 62.1.2 LANGUAGES CXX C)
@@ -51,9 +51,8 @@ endif()
 
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
-if (NOT OS2)
+
 find_package(PkgConfig REQUIRED)
-endif (NOT OS2)
 
 pkg_check_modules(hunspell QUIET hunspell)
 if(hunspell_FOUND)
