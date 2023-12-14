@@ -24,9 +24,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 COMPONENTS Core5Compat REQUIRED)
 endif()
 
-if (NOT OS2)
+if (Qt6_FOUND)
 qt_standard_project_setup()
-endif (NOT OS2)
+endif (Qt6_FOUND)
 
 set(PROJECT "tea-qt")
 project ($PROJECT VERSION 62.1.2 LANGUAGES CXX C)
