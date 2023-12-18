@@ -1,0 +1,11 @@
+History of OS/2-specific changes for Tea
+===========================================
+
+This file contains only OS/2-specific changes. 
+Version 2022.10.15-os2 (2022-11-06)
+-----------------------------------
+
+- Update source to build 2023-12-10
+- Fix error cmake about "qt_standard_project_setup"
+- On OS/2 we overwrite the dictionary only, if not in an rpm installed system
+- Add ico to exe file
