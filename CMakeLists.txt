@@ -25,11 +25,14 @@ find_package(Qt6 COMPONENTS Core5Compat REQUIRED)
 endif()
 
 
-qt_standard_project_setup()
+#qt_standard_project_setup()
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 
 set(PROJECT "tea-qt")
-project ($PROJECT VERSION 62.1.2 LANGUAGES CXX C)
+project ($PROJECT VERSION 62.4.0 LANGUAGES CXX C)
 add_definitions(-DVERSION_NUMBER="\\"${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}\\"")
 add_definitions(-DNOCRYPT=1)
 add_definitions(-DNOUNCRYPT=1)
