@@ -278,7 +278,7 @@ void CAboutWindow::update_image()
 
 CAboutWindow::CAboutWindow()
 {
-  setAttribute (Qt::WA_DeleteOnClose);
+ // setAttribute (Qt::WA_DeleteOnClose);
 
   QStringList sl_t = qstring_load (":/AUTHORS").split ("##");
 
@@ -428,6 +428,12 @@ void CTEA::closeEvent (QCloseEvent *event)
 
   delete documents;
   delete img_viewer;
+
+  if (wnd_about)
+     {
+      wnd_about->close();
+      delete wnd_about;
+    }
 
 #if defined (HUNSPELL_ENABLE) || defined (ASPELL_ENABLE)
   delete spellchecker;
@@ -1755,7 +1761,7 @@ void CTEA::file_open_programs_file()
 void CTEA::file_open_bookmark()
 {
   last_action = sender();
-  documents->open_file_triplex (qobject_cast<QAction *>(last_action)->text());
+  documents->open_file_triplex (qobject_cast<QAction *>(last_action)->data().toString());
   main_tab_widget->setCurrentIndex (idx_tab_edit);
 }
 
@@ -2091,7 +2097,7 @@ void CTEA::mrkup_mode_choosed()
   last_action = sender();
 
   QAction *a = qobject_cast<QAction *>(sender());
-  markup_mode = a->text();
+  markup_mode = a->data().toString();
   documents->markup_mode = markup_mode;
 
   CDocument *d = documents->get_current();
@@ -2115,13 +2121,13 @@ void CTEA::mrkup_header()
   if (documents->markup_mode == "Markdown")
      {
       QString t;
-      int n = a->text().toLower()[1].digitValue();
+      int n = a->data().toString().toLower()[1].digitValue();
       t.fill ('#', n);
       r = t + " " + d->get();
      }
   else
       r = QString ("<%1>%2</%1>").arg (
-                   a->text().toLower()).arg (
+                   a->data().toString().toLower()).arg (
                    d->get());
 
   d->put (r);
@@ -3415,6 +3421,32 @@ void CTEA::fn_case_down()
   CDocument *d = documents->get_current();
   if (d)
       d->put (d->get().toLower());
+}
+
+
+void CTEA::fn_case_inverse()
+{
+  last_action = sender();
+
+  CDocument *d = documents->get_current();
+  if (! d)
+      return;
+
+  if (! d->has_selection())
+     return;
+
+  QString s = d->get();
+
+  for (int i = 0; i < s.size(); i++)
+      {
+       if (s[i].isUpper())
+          s[i] = s[i].toLower();
+       else
+           s[i] = s[i].toUpper();
+
+      }
+
+      d->put (s);
 }
 
 
@@ -4721,8 +4753,8 @@ void CTEA::fn_change_spell_lang()
   last_action = sender();
 
   QAction *a = qobject_cast<QAction *>(sender());
-  settings->setValue ("spell_lang", a->text());
-  spellchecker->change_lang (a->text());
+  settings->setValue ("spell_lang", a->data().toString());
+  spellchecker->change_lang (a->data().toString());
   spellchecker->load_dict();
 
   fn_spell_check();
@@ -4899,8 +4931,8 @@ void CTEA::fn_spell_suggest_callback()
   if (! d)
      return;
 
-  QAction *act = qobject_cast<QAction *>(sender());
-  QString new_text = act->text();
+  QAction *a = qobject_cast<QAction *>(sender());
+  QString new_text = a->data().toString();
 
   QTextCursor cr = d->textCursor();
 
@@ -6003,10 +6035,13 @@ void CTEA::view_use_palette()
   last_action = sender();
 
   QAction *a = qobject_cast<QAction *>(sender());
-  QString fname = dir_palettes + "/" + a->text();
+
+//  QString tf = qstring_clear (a->text());
+
+  QString fname = dir_palettes + "/" + a->data().toString();
 
   if (! file_exists (fname))
-     fname = ":/palettes/" + a->text();
+     fname = ":/palettes/" + a->data().toString();
 
   fname_def_palette = fname;
   load_palette (fname);
@@ -6169,9 +6204,12 @@ void CTEA::view_darker()
 
 void CTEA::help_show_about()
 {
-  CAboutWindow *a = new CAboutWindow();
-  a->move (x() + 20, y() + 20);
-  a->show();
+  //CAboutWindow *a = new CAboutWindow();
+  if (! wnd_about)
+     wnd_about = new CAboutWindow();
+
+  wnd_about->move (x() + 20, y() + 20);
+  wnd_about->show();
 }
 
 
@@ -6220,6 +6258,7 @@ Application stuff inits and updates
 
 CTEA::CTEA()
 {
+  wnd_about = 0;
   mainSplitter = 0;
   ui_update = true;
   boring = false;
@@ -6932,6 +6971,10 @@ File menu
 ===================
 */
 
+#if QT_VERSION < 0x050000
+  QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar);
+#endif
+
   menu_file = menuBar()->addMenu (tr ("File"));
   menu_file->setTearOffEnabled (true);
 
@@ -7190,6 +7233,8 @@ Functions menu
 
   add_to_menu (tm, tr ("UPCASE"), SLOT(fn_case_up()),"Ctrl+Up");
   add_to_menu (tm, tr ("lower case"), SLOT(fn_case_down()),"Ctrl+Down");
+  add_to_menu (tm, tr ("Case inverse"), SLOT(fn_case_inverse()));
+
   add_to_menu (tm, tr ("Capitalize sentences"), SLOT(fn_case_cap_sentences()));
 
 
@@ -8503,7 +8548,7 @@ void CTEA::create_markup_hash()
   h9["HTML"] = "<a href=\"\">%s</a>";
   h9["XHTML"] = "<a href=\"\">%s</a>";
   h9["LaTeX"] = "\\href{}{%s}";
-  h9["Markdown"] = "[](%s)";
+  h9["Markdown"] = "[%s]()";
 
   hash_markup.insert ("link", h9);
 
@@ -8689,8 +8734,8 @@ void CTEA::update_snippets()
 
 void CTEA::update_keyboards()
 {
-  qDebug() << "update_keyboards()";
-  qDebug() << dir_keyboards;
+ // qDebug() << "update_keyboards()";
+//  qDebug() << dir_keyboards;
 
    menu_view_keyboards->clear();
    create_menu_from_dir (this,
@@ -8976,7 +9021,7 @@ Misc callbacks
 void CTEA::select_label()
 {
   last_action = sender();
-  QAction *Act = qobject_cast<QAction *>(sender());
+  QAction *a = qobject_cast<QAction *>(sender());
 
   CDocument *d = documents->get_current();
   if (! d)
@@ -8985,7 +9030,7 @@ void CTEA::select_label()
   QTextCursor cr;
 
   QString text_to_find = settings->value ("label_start", "[?").toString()
-                         + Act->text()
+                         + a->data().toString()
                          + settings->value ("label_end", "?]").toString();
 
   cr = d->document()->find (text_to_find);
@@ -9004,7 +9049,7 @@ void CTEA::run_program()
      return;
 
   QAction *a = qobject_cast<QAction *>(sender());
-  QString command = programs.value(a->text());
+  QString command = programs.value (a->data().toString());
   if (command.isEmpty())
      return;
 
