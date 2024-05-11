@@ -21,7 +21,7 @@ if (Qt6_FOUND)
 message("+ Qt6 found")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-find_package(Qt6 COMPONENTS Core5Compat REQUIRED)
+#find_package(Qt6 COMPONENTS Core5Compat REQUIRED)
 endif()
 
 
@@ -32,18 +32,22 @@ set(CMAKE_AUTOUIC ON)
 
 
 set(PROJECT "tea-qt")
-project ($PROJECT VERSION 62.4.0 LANGUAGES CXX C)
-add_definitions(-DVERSION_NUMBER="\\"${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}\\"")
-add_definitions(-DNOCRYPT=1)
-add_definitions(-DNOUNCRYPT=1)
-add_definitions(-DQUAZIP_STATIC=1)
+project ($PROJECT VERSION 63.0.0 LANGUAGES CXX C)
+qt_add_resources(QT_RESOURCES resources.qrc)
 
+add_definitions(-DVERSION_NUMBER="\\"${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}\\"")
+#add_definitions(-DNOCRYPT=1)
+#add_definitions(-DNOUNCRYPT=1)
+#add_definitions(-DQUAZIP_STATIC=1)
+
+option(USE_NUSPELL "Use Nuspell" OFF)
 option(USE_ASPELL "Use Aspell" OFF)
+option(USE_HUNSPELL "Use Hunspell" ON)
 option(USE_PRINTER "Use printer support" OFF)
 option(USE_PDF "Use libpoppler" OFF)
 option(USE_DJVU "Use djvu support" OFF)
 option(USE_MAC "Build for Mac" OFF)
-
+option(USE_SPEECH "Use Speech Dispatcher" OFF)
 
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -55,21 +59,10 @@ endif()
 message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
 
 
-find_package(PkgConfig REQUIRED)
-
-pkg_check_modules(hunspell QUIET hunspell)
-if(hunspell_FOUND)
-  add_definitions(-DHUNSPELL_ENABLE)
-  message("+ hunspell support")
-endif()
-
-
-qt_add_resources(QT_RESOURCES resources.qrc)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${QtWidgets_EXECUTABLE_COMPILE_FLAGS}")
 
-file(GLOB tea_SRCS "*.c" "*.cpp")
-file(GLOB tea_HEADERS "*.h" ".*hpp")
+file(GLOB tea_SRCS "src/*.c" "src/*.cpp")
+file(GLOB tea_HEADERS "src/*.h" "src/.*hpp")
 
 
 set(tea_ICONPNG32
@@ -116,6 +109,43 @@ set_target_properties(tea PROPERTIES
     MACOSX_BUNDLE ON
 )
 
+find_package(PkgConfig REQUIRED)
+
+if (Qt6_FOUND)
+if(USE_NUSPELL)
+pkg_check_modules(nuspell QUIET nuspell)
+if(nuspell_FOUND)
+  add_definitions(-DNUSPELL_ENABLE)
+  target_link_libraries(tea ${nuspell_LIBRARIES})
+  include_directories(${nuspell_INCLUDE_DIRS})
+  message("+ nuspell support")
+endif()
+
+endif()
+endif()
+#end of Qt6/Nuspell
+
+
+if(USE_HUNSPELL)
+pkg_check_modules(hunspell QUIET hunspell)
+if(hunspell_FOUND)
+  add_definitions(-DHUNSPELL_ENABLE)
+  message("+ hunspell support")
+endif()
+endif()
+
+
+if(USE_SPEECH)
+pkg_check_modules(SPEECH REQUIRED speech-dispatcher>=0.0.1)
+if (SPEECH_FOUND)
+   Message ("+ speech support")
+   add_definitions(-DSPEECH_ENABLE)
+   target_include_directories(tea PUBLIC ${SPEECH_INCLUDE_DIRS})
+   target_link_libraries(tea ${SPEECH_LIBRARIES})
+endif()
+endif()
+
+
 
 if(USE_PRINTER)
 find_package(QtPrintSupport)
@@ -159,50 +189,15 @@ endif()
 
 if(USE_PDF)
 find_package(PkgConfig)
-
-
-if (NOT Qt6_FOUND)
-pkg_check_modules(popplerqt5 QUIET poppler-qt5)
-if(popplerqt5_FOUND)
+pkg_check_modules(popplercpp QUIET poppler-cpp)
+if(popplercpp_FOUND)
   add_definitions(-DPOPPLER_ENABLE)
-  target_link_libraries(tea ${popplerqt5_LIBRARIES})
-  include_directories(${popplerqt5_INCLUDE_DIRS})
-  message("+ popplerqt5 support")
+  target_link_libraries(tea ${popplercpp_LIBRARIES})
+  include_directories(${popplercpp_INCLUDE_DIRS})
+  message("+ popplercpp support")
 endif()
 endif()
 
-#if (Qt6_FOUND)
-#pkg_check_modules(popplerqt6 QUIET poppler-qt6)
-#if(popplerqt6_FOUND)
-#  add_definitions(-DPOPPLER_ENABLE)
-#  target_link_libraries(tea ${popplerqt6_LIBRARIES})
-#  include_directories(${popplerqt6_INCLUDE_DIRS})
-#  message("+ popplerqt6 support")
-#endif()
-#endif()
-
-
-if (Qt6_FOUND)
-
-#find_package(Qt6 REQUIRED COMPONENTS Pdf)
-#if (Qt6::Pdf_FOUND)
-#  add_definitions(-DPDF6)
-#  target_link_libraries(tea Qt6::Pdf)
-#  message("+ Qt 6.6 PDF support")
-
-#else()
-
-pkg_check_modules(popplerqt6 QUIET poppler-qt6)
-if(popplerqt6_FOUND)
-  add_definitions(-DPOPPLER_ENABLE)
-  target_link_libraries(tea ${popplerqt6_LIBRARIES})
-  include_directories(${popplerqt6_INCLUDE_DIRS})
-  message("+ popplerqt6 support")
-endif()
-endif()
-
-
-endif()
 
 if(USE_DJVU)
 find_package(PkgConfig)
@@ -216,21 +211,21 @@ endif()
 endif()
 
 
-if(UNIX OR MINGW OR OS2)
-    find_package(ZLIB REQUIRED)
-else(UNIX OR MINGW)
-    set(ZLIB_INCLUDE_DIRS "${QT_ROOT}/src/3rdparty/zlib" CACHE STRING "Path to ZLIB headers of Qt")
-    set(ZLIB_LIBRARIES "")
-    if(NOT EXISTS "${ZLIB_INCLUDE_DIRS}/zlib.h")
-        message("Please specify a valid zlib include dir")
-    endif(NOT EXISTS "${ZLIB_INCLUDE_DIRS}/zlib.h")
-endif(UNIX OR MINGW OR OS2)
+#if(UNIX OR MINGW OR OS2)
+#    find_package(ZLIB REQUIRED)
+#else(UNIX OR MINGW)
+#    set(ZLIB_INCLUDE_DIRS "${QT_ROOT}/src/3rdparty/zlib" CACHE STRING "Path to ZLIB headers of Qt")
+#    set(ZLIB_LIBRARIES "")
+#    if(NOT EXISTS "${ZLIB_INCLUDE_DIRS}/zlib.h")
+#        message("Please specify a valid zlib include dir")
+#    endif(NOT EXISTS "${ZLIB_INCLUDE_DIRS}/zlib.h")
+#endif(UNIX OR MINGW OR OS2)
 
 
-if (ZLIB_FOUND)
-    include_directories(${ZLIB_INCLUDE_DIRS} )
-    target_link_libraries(tea ${ZLIB_LIBRARIES} )
-endif( ZLIB_FOUND )
+#if (ZLIB_FOUND)
+#    include_directories(${ZLIB_INCLUDE_DIRS} )
+#    target_link_libraries(tea ${ZLIB_LIBRARIES} )
+#endif( ZLIB_FOUND )
 
 if(hunspell_FOUND)
   include_directories(${hunspell_INCLUDE_DIRS} )
@@ -238,13 +233,13 @@ if(hunspell_FOUND)
 endif()
 
 
-if (Qt6_FOUND)
-target_link_libraries(tea Qt::Core5Compat)
-endif()
+
+
+#if (Qt6_FOUND)
+#target_link_libraries(tea Qt::Core5Compat)
+#endif()
 
 target_link_libraries(tea Qt::Widgets Qt::Core)
-
-
 
 install (TARGETS tea DESTINATION bin)
 install (FILES ${tea_ICONSVG} DESTINATION share/icons/hicolor/scalable/apps)

@@ -1,4 +1,4 @@
-VERSION = 62.4.0
+VERSION = 63.0.0
 
 os2: {
 DEFINES += 'VERSION_NUMBER=\'"62.4.0"\''
@@ -13,12 +13,11 @@ exists("/usr/include/linux/joystick.h") {
 }
 
 
-DEFINES += NOCRYPT \
-           NOUNCRYPT \
-           QUAZIP_STATIC
-
-
 #QMAKE_CXXFLAGS += -std=c++11
+
+#DEFINES += NOCRYPT \
+#           NOUNCRYPT \
+#           QUAZIP_STATIC
 
 
 USE_ASPELL = true
@@ -98,75 +97,54 @@ useclang{
     QMAKE_CXXFLAGS += -std=c++11
 }
 
-SOURCES += tea.cpp \
-    main.cpp \
-    todo.cpp \
-    textproc.cpp \
-    libretta_calc.cpp \
-    wavinfo.cpp \
-    calendar.cpp \
-    gui_utils.cpp \
-    document.cpp \
-    utils.cpp \
-    spellchecker.cpp \
-    fman.cpp \
-    shortcuts.cpp \
-    logmemo.cpp \
-    img_viewer.cpp \
-    tio.cpp \
-    tzipper.cpp \
-    single_application_shared.cpp \
-    exif_reader.cpp \
-    myjoystick.cpp \
-    pugixml.cpp
+SOURCES += src/tea.cpp \
+    src/main.cpp \
+    src/todo.cpp \
+    src/textproc.cpp \
+    src/libretta_calc.cpp \
+    src/wavinfo.cpp \
+    src/calendar.cpp \
+    src/gui_utils.cpp \
+    src/document.cpp \
+    src/utils.cpp \
+    src/spellchecker.cpp \
+    src/fman.cpp \
+    src/shortcuts.cpp \
+    src/logmemo.cpp \
+    src/img_viewer.cpp \
+    src/tio.cpp \
+    src/single_application_shared.cpp \
+    src/exif_reader.cpp \
+    src/myjoystick.cpp \
+    src/pugixml.cpp \
+    src/zip.c \
+    src/enc.cpp
 
 
-HEADERS += tea.h \
-    todo.h \
-    document.h \
-    utils.h \
-    textproc.h \
-    calendar.h \
-    libretta_calc.h \
-    spellchecker.h \
-    fman.h \
-    shortcuts.h \
-    logmemo.h \
-    img_viewer.h \
-    gui_utils.h \
-    wavinfo.h \
-    tio.h \
-    tzipper.h \
-    single_application_shared.h \
-    exif_reader.h \
-    myjoystick.h \
-    pugixml.hpp \
-    pugiconfig.hpp
+HEADERS += src/tea.h \
+    src/todo.h \
+    src/document.h \
+    src/utils.h \
+    src/textproc.h \
+    src/calendar.h \
+    src/libretta_calc.h \
+    src/spellchecker.h \
+    src/fman.h \
+    src/shortcuts.h \
+    src/logmemo.h \
+    src/img_viewer.h \
+    src/gui_utils.h \
+    src/wavinfo.h \
+    src/tio.h \
+    src/single_application_shared.h \
+    src/exif_reader.h \
+    src/myjoystick.h \
+    src/pugixml.hpp \
+    src/pugiconfig.hpp \
+    src/miniz.h \
+    src/zip.h \
+    src/enc.h
 
-
-HEADERS += \
-        ioapi.h \
-        quagzipfile.h \
-        quaziodevice.h \
-        quazipdir.h \
-        quazipfile.h \
-        quazipfileinfo.h \
-        quazip_global.h \
-        quazip.h \
-        quazipnewinfo.h \
-        unzip.h \
-        zip.h
-
-SOURCES += qioapi.cpp \
-           quagzipfile.cpp \
-           quaziodevice.cpp \
-           quazip.cpp \
-           quazipdir.cpp \
-           quazipfile.cpp \
-           quazipfileinfo.cpp \
-           quazipnewinfo.cpp \
-           unzip.c \
-           zip.c
 
 
 TEMPLATE = app
@@ -221,7 +199,6 @@ DISTFILES += ChangeLog \
     NEWS-RU \
     AUTHORS \
     TODO \
-    INSTALL \
     hls/* \
     palettes/* \
     encsign/* \
@@ -252,24 +229,24 @@ DISTFILES += ChangeLog \
     icons/edit-cut.png \
     icons/edit-paste-active.png \
     icons/edit-paste.png \
-icons/file-new.png \ 
-icons/file-open-active.png \
-icons/file-open.png \
-icons/file-save-active.png \
-icons/file-save-as.png \
-icons/file-save.png \ 
-icons/labels.png \
-icons/tea_icon_v2.png \
-icons/tea-icon-v3-01.png \
-icons/tea-icon-v3-02.png \
-icons/tea-icon-v3-03.png
+    icons/file-new.png \
+    icons/file-open-active.png \
+    icons/file-open.png \
+    icons/file-save-active.png \
+    icons/file-save-as.png \
+    icons/file-save.png \
+    icons/labels.png \
+    icons/tea_icon_v2.png \
+    icons/tea-icon-v3-01.png \
+    icons/tea-icon-v3-02.png \
+    icons/tea-icon-v3-03.png
 
 
 unix: {
-       system (pkg-config --exists zlib) {
-               message ("Zlib found")
-               PKGCONFIG += zlib
-               }
+#       system (pkg-config --exists zlib) {
+#               message ("Zlib found")
+#               PKGCONFIG += zlib
+#               }
 
        contains (USE_ASPELL,true) {
                 exists ("/usr/include/aspell.h") {
@@ -290,9 +267,9 @@ unix: {
 
 
 usepoppler{
-system(pkg-config --exists poppler-qt5) {
+system(pkg-config --exists poppler-cpp) {
     message ("Poppler enabled")
-        PKGCONFIG += poppler-qt5
+        PKGCONFIG += poppler-cpp
         DEFINES += POPPLER_ENABLE
         }
 }
@@ -316,7 +293,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 
        message ("QT > 4")
 
-       LIBS += zlib1.dll
+#       LIBS += zlib1.dll
 
         contains(USE_ASPELL,true)
                  {
@@ -334,23 +311,18 @@ greaterThan(QT_MAJOR_VERSION, 4) {
                   exists ("c:\\Qt\\Qt5.3.1\\5.3\\mingw482_32\\include\\hunspell\\hunspell.hxx")
 
                          {
-
                           message ("hunspell enabled")
-
-
 #                          LIBS += c:\dev\hunspell-mingw-master\lib\hunspell.dll
                       #     LIBS += libhunspell.dll
-                           LIBS += hunspell.dll
-
-
+                          LIBS += hunspell.dll
                           DEFINES += HUNSPELL_ENABLE
                          }
                 }
 
   } else {
-   LIBS += zlib1.dll
+#   LIBS += zlib1.dll
 
-   INCLUDEPATH+=c:\\Qt\\4.8.4\\src\\3rdparty\\zlib     
+#   INCLUDEPATH+=c:\\Qt\\4.8.4\\src\\3rdparty\\zlib
 
         contains(USE_ASPELL,true)
                  {
@@ -359,7 +331,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
                           message ("ASpell enabled")
                           LIBS += -laspell-15
                           DEFINES += ASPELL_ENABLE
-                          }
+                         }
                   }
 
 
@@ -378,10 +350,10 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 
 os2: {
 
-system(pkg-config --exists zlib) {
-    message ("Zlib found")
-        PKGCONFIG += zlib
-        }
+#system(pkg-config --exists zlib) {
+#    message ("Zlib found")
+#        PKGCONFIG += zlib
+#        }
 
 
 contains(USE_ASPELL,true){
@@ -403,9 +375,9 @@ message ("hunspell enabled")
                 }
 
 usepoppler{
-system(pkg-config --exists poppler-qt5) {
+system(pkg-config --exists poppler-cpp) {
     message ("Poppler enabled")
-        PKGCONFIG += poppler-qt5
+        PKGCONFIG += poppler-cpp
         DEFINES += POPPLER_ENABLE
         }
 }
@@ -420,4 +392,3 @@ system(pkg-config --exists ddjvuapi) {
 }
 
 }
-
