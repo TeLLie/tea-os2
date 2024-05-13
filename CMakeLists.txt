@@ -32,7 +32,7 @@ set(CMAKE_AUTOUIC ON)
 
 
 set(PROJECT "tea-qt")
-project ($PROJECT VERSION 63.0.0 LANGUAGES CXX C)
+project ($PROJECT VERSION 63.0.1 LANGUAGES CXX C)
 qt_add_resources(QT_RESOURCES resources.qrc)
 
 add_definitions(-DVERSION_NUMBER="\\"${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}\\"")
@@ -136,7 +136,7 @@ endif()
 
 
 if(USE_SPEECH)
-pkg_check_modules(SPEECH REQUIRED speech-dispatcher>=0.0.1)
+pkg_check_modules(SPEECH QUIET speech-dispatcher>=0.0.1)
 if (SPEECH_FOUND)
    Message ("+ speech support")
    add_definitions(-DSPEECH_ENABLE)
