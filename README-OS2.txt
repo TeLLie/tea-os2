@@ -5,7 +5,7 @@
 ****                All the money you send will go to the QT5 project                          ****
 ===================================================================================================
 
-Tea v63.0.0   
+Tea v63.0.1   
 
  CONTENTS OF THIS FILE
  =====================
@@ -157,71 +157,50 @@ development, you can do so in one of the following ways:
 Compiled now with Qt v5.15.2
 
 Changelog:
-63.0.0
-- per spellchecker user dict in a favour of the common one, for all languages
-+ Nuspell support
-- Qt6::Core5Compat dependency
-- zlib dependency
-- Quazip bundled and dependency
+May 11 2024 - TEA 63.0.1 is out! The spellchecker fix.
 
+May 10 2024 - TEA 63.0.0 is out!
 
-62.4.0, March 2024
-   More Qt6-related fixes!
+Hello! This release removes a lot, and also brings a lot, it's all about changes and moving forward. The QT-version of TEA was born at 2007, with many functions of predecessors (the first TEA was developed at the year 2000 for Windows, with Delphi, and then was reborn many times on different programming languages and toolkits).
 
-62.1.2
+So I recreated many old functions, those was useful in the past, and from yest to year TEA just grew with functionality. Different things became obscure and deprecated. I haven't touch some code over a decade. It was good working code at 2007, but now?
 
-* Spellchecker fix
+TEA version 63 is a try to refresh a program, make it more compact and clean, and also modern. Not just the "maintainance release". Despite this horrible promise, TEA is still C++ 98 code (and C++ 17 when build with Qt6), and can be compiled with Qt4, Qt5 or Qt6.
 
-62.1.1
-* PDF fix
+One of the core TEA features was ability to work with any possible character sets. This was implemented using Qt's wrapper around the iconv, and that wrapper was deprecated at Qt6, but still available there as the part of Qt5Compat.
 
-62.1.0
-+ new version of pugixml XML parser
-* cmake support is rewritten a lot.
+At TEA 63 I removed this dependency, now TEA can handle only a limited number of charsets - UTF-8, UTF-16 and legacy Cyrillic encodings. If you need some specific 8-bit charset support, let me know.
 
-* 62.0.1 quick fix
-+ Edit - Select all
+Also, all charset auto-detection code is removed.
 
-* Qt6 copy text with new lines - fixed
-* Markdown functions - fixes 
+Another big and important thing in TEA is ZIP-support, that is needed to work with DOCX, ODT, EPUB, etc. Previously, TEA used the bundled Quazip and zlib to handle ZIPs. Sure, I was glad to use it at the full power and gave to TEA the packing abilities. Now even I don't use TEA as the zipper or unzipper.
 
-+ View - Preview Markdown //Qt 5.14+ 
+So, now TEA uses another, the smaller library (ZIP/Miniz) for ZIP support, and cannot create archives.
 
-+ QT6 only: Functions - Math - Subtitles: shift timecode by msecs 
-            put msecs to FIF. msecs can be negative, i.e "-2000" shifts timecodes by 2000 msecs earlier
-            //works also for Youtube subs
+As a result of these changes, I removed also: RTF reader (probably temporary), gzipped text files reader, and all code that related to zip/unzip, including the file names charset setting (it was important for the ancient zips with Cyrillic file names). Noooo! Noooo! It broke my heart!
 
-+ Options - Interface - Show tabs and spaces
-* find in files FIX
-* TEA theme FIX
+TEA 63 uses the code from my new program, the e-book reader and "speaker" Beseda (https://psemiletov.github.io/beseda/) designed for visually impaired people. Thus leaded me to rewrite and fix FB2 and Epub support for TEA.
 
-- Individual ODT/SXW reader class, the functionality moved to common zipped XML reader
-+ Tune - Functions - Misc - Show ebooks fine (adds spaces before each paragraph)
-* old bookmarks file automatically converts to new format
-* bookmarks and recent files has a new format (with a separator *)
-* recent files list will be updated to new format on use, so the old records will be lost
+Other removals are: Alt-WASD as cursor keys and Meson build system support.
 
-* xml parser changed to pugixml
+Meson is good, but it is too much for TEA to support all three build systems: qmake, Meson and cmake. So now we have legacy qmake support for Qt4 and Qt5 (but cmake for Qt5 is preferred), and cmake for Qt5 and Qt6.
 
-+ FB2.ZIP, FBZ support
-* single application mode fixes
+Spellchecking now much improved. It is fixed at Windows port (at least with Hunspell, but I think there are some issues with Aspell, need to test more).
 
-+ FB2 support improvements
-+ poppler-qt6 support with cmake
-* DJVU support with cmake - fixed
+Among Aspell and Hunspell, you can use shining modern Nuspell (if TEA is build with it support).
 
-+ autosave
-* braces hl megafix
+Over all three spellchecking engines TEA provides own simple spellchecker, that works transparently and provides the user-defined dictionary, shared between all engines and languages.
 
-* cmake + hunspell detection fix
-+ Polish UI and Manual translation by Krzysztof Jakiewicz
-+ Rust hl support
-+ The time consuming operations such as "Find in files" can be interrupted.
+Another new feature, the experimental one - Speech Dispatcher support, please read the TEA documentation how to use it. Briefly, TEA now can speak the text, but it will be enhanced in the future releases to make it really handy.
 
-* Dates panel upd
-+ SRT hightlighting
-+ Basic Haskell hightlighting
-* Good old bug with syntax hl engine (related to partial hl module file) is fixed
-+ Youtube subtitles highlighting support
-+ Fn - Case - Capitalize sentences
+Another note about formats support. PDF support now uses libpoppler-cpp, not Qt bindings.
 
+A known issue - all Alt-key based user-defined hotkeys works strange under Plasma 6, please avoid such hotkeys.
+
+NOTE FOR PACKAGERS:
+
+- Removed dependency: zlib
+- Removed optional dependency: poppler-qt5/6
++ New optional dependencies: popplercpp, nuspell
+
+Stay tuned.
