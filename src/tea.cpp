@@ -30,6 +30,7 @@ C++/Qt branch started at 08 November 2007
 #include <cstdlib>
 
 
+//ВОТ ЭТО НИЖЕ ВСПОМНИТЬ
 #if QT_VERSION >= 0x050000
 #include <QRegularExpression>
 #else
@@ -6848,7 +6849,7 @@ void CTEA::create_main_widget_splitter()
   tab_editor->setUsesScrollButtons (true);
 
 #if (QT_VERSION_MAJOR >= 4 && QT_VERSION_MINOR >= 5)
-  tab_editor->setMovable (true);
+  //tab_editor->setMovable (true);
 #endif
 
   tab_editor->setObjectName ("tab_editor");

@@ -70,6 +70,8 @@ DJVU read code taken fromdvutxt.c:
 #include <stdio.h>
 //////////////////
 
+#include <sstream>
+
 
 #if defined (POPPLER_ENABLE)
 #include <poppler/cpp/poppler-document.h>
@@ -140,6 +142,131 @@ bool CXML_walker::for_each (pugi::xml_node &node)
 
   return true;
 }
+
+
+std::vector <std::string> split_string_to_vector (const string& s, const string& delimeter, const bool keep_empty)
+{
+  vector <string> result;
+
+  if (delimeter.empty())
+     {
+      result.push_back (s);
+      return result;
+     }
+
+  string::const_iterator substart = s.begin(), subend;
+
+  while (true)
+        {
+         subend = search (substart, s.end(), delimeter.begin(), delimeter.end());
+
+         string temp (substart, subend);
+
+         if (keep_empty || ! temp.empty())
+             result.push_back (temp);
+
+         if (subend == s.end())
+             break;
+
+         substart = subend + delimeter.size();
+        }
+
+  return result;
+}
+
+
+//from https://stackoverflow.com/questions/13739924/remove-all-xml-tags-from-a-stdstring
+std::string xml_strip(std::string &xmlBuffer)
+{
+    bool copy = true;
+    std::string plainString = "";   
+    std::stringstream convertStream;
+
+    // remove all xml tags
+    for (int i=0; i < xmlBuffer.length(); i++)
+    {                   
+        convertStream << xmlBuffer[i];
+
+        if(convertStream.str().compare("<") == 0) copy = false;
+        else if(convertStream.str().compare(">") == 0) 
+        {
+            copy = true;
+            convertStream.str(std::string());
+            continue;
+        }
+
+        if (copy) 
+           plainString.append(convertStream.str());       
+        //
+        
+        convertStream.str(std::string());
+    }
+
+    return plainString;
+}
+
+
+/*
+vector <string> split_string_to_vector (const string& s, const string& delimeter, const bool keep_empty)
+{
+  vector <string> result;
+
+  if (delimeter.empty())
+     {
+      result.push_back (s);
+      return result;
+     }
+
+  string::const_iterator substart = s.begin(), subend;
+
+  while (true)
+        {
+         subend = search (substart, s.end(), delimeter.begin(), delimeter.end());
+
+         string temp (substart, subend);
+
+         if (keep_empty || ! temp.empty())
+             result.push_back (temp);
+
+         if (subend == s.end())
+             break;
+
+         substart = subend + delimeter.size();
+        }
+
+  return result;
+}
+*/
+
+std::string join_lines (const std::vector <std::string> &lst, const std::string &delim)
+{
+  std::string ret;
+  
+  //for (const auto &s : lst) 
+  for (size_t i = 0; i < lst.size(); i++)
+      {
+       if (! ret.empty())
+           ret += delim;
+          
+       //ret += s;
+       ret += lst[i]; 
+     }
+  return ret;
+}
+
+std::string xml_strip_remove_empty_lines (std::string &xmlBuffer)
+{
+  std::string s = xml_strip (xmlBuffer);
+  
+  std::vector <std::string> v = split_string_to_vector (s, "\n", false);
+
+  return join_lines (v, "\n");
+  
+  //str.find_first_not_of(" \t\n\v\f\r") != std::string::npos
+
+}
+
+
 
 
 std::string html_strip (const std::string &source)
@@ -267,6 +394,8 @@ QString extract_text_from_html (const QString &string_data)
 
 bool CTioPlainText::load (const QString &fname)
 {
+  data.clear();
+
   QFile file (fname);
 
   if (! file.open (QFile::ReadOnly))
@@ -298,7 +427,7 @@ bool CTioPlainText::load (const QString &fname)
 
   QByteArray ba = file.readAll();
 
-  qDebug() << "charset:" << charset;
+  //qDebug() << "charset:" << charset;
 
 //ok
   if (charset == "UTF-8")
@@ -459,13 +588,15 @@ CTio* CTioHandler::get_for_fname (const QString &fname)
 {
   CTio *instance = 0;
 
+  //с нуля лишено смысла, ибо list[0] содержит умолчальный обработчик
+  //в котором не создан список расширений файлов для обработки
   for (vector <size_t>::size_type i = 0; i < list.size(); i++)
       {
        instance = list.at (i);
 
-       for (int i = 0; i < instance->extensions.size(); i++)
+       for (int j = 0; j < instance->extensions.size(); j++)
            {
-            QString ext = "." + instance->extensions[i];
+            QString ext = "." + instance->extensions[j];
             if (fname.endsWith (ext))
                 return instance;
            }
@@ -490,6 +621,9 @@ CTioGzip::CTioGzip()
 
 bool CTioGzip::load (const QString &fname)
 {
+  data.clear();
+
+
 /*  QByteArray a = gzip_deflateFile (fname);
   data = a.data();
   return true;*/
@@ -513,6 +647,8 @@ CTioABW::CTioABW()
 
 bool CTioABW::load (const QString &fname)
 {
+  data.clear();
+
   QString temp = qstring_load (fname);
 
   QStringList tags;
@@ -904,6 +1040,8 @@ bool CTioFB2::load (const QString &fname)
 
   std::string stemp =(char*)buf;
 
+  free (buf);
+
   if (stemp.find ("encoding=\"windows-1251\"")  != std::string::npos)
      {
   //   std::cout << "1251^^^^^^^^^^^^^^^^^^^^^ ZIPPED" << std::endl;
@@ -1285,6 +1423,9 @@ CTioRTF::CTioRTF()
 //BROKEN
 bool CTioRTF::load (const QString &fname)
 {
+
+  data.clear();
+
   QByteArray ba = file_load (fname);
 /*
   QString text;
@@ -1360,6 +1501,9 @@ CTioPDF::CTioPDF()
 
 bool CTioPDF::load (const QString &fname)
 {
+  data.clear();
+
+
   poppler::document *d = poppler::document::load_from_file (fname.toStdString ());
 
   if (! d)
@@ -1461,6 +1605,9 @@ CTioDJVU::CTioDJVU()
 
 bool CTioDJVU::load (const QString &fname)
 {
+   data.clear();
+
+
   if (! (ctx = ddjvu_context_create ("tea")))
      return false;
 
@@ -1497,37 +1644,6 @@ CTioEpub::CTioEpub()
 }
 
 
-std::vector <std::string> split_string_to_vector (const string& s, const string& delimeter, const bool keep_empty)
-{
-  vector <string> result;
-
-  if (delimeter.empty())
-     {
-      result.push_back (s);
-      return result;
-     }
-
-  string::const_iterator substart = s.begin(), subend;
-
-  while (true)
-        {
-         subend = search (substart, s.end(), delimeter.begin(), delimeter.end());
-
-         string temp (substart, subend);
-
-         if (keep_empty || ! temp.empty())
-             result.push_back (temp);
-
-         if (subend == s.end())
-             break;
-
-         substart = subend + delimeter.size();
-        }
-
-  return result;
-}
-
-
 std::vector <std::string> extract_src_from_toc (const std::string &source, const std::string &prefix)
 {
   std::vector <std::string> result;
@@ -1550,6 +1666,8 @@ std::vector <std::string> extract_src_from_toc (const std::string &source, const
          //else
 
          std::string url = source.substr (pos_start + signature_size, pos_end - (pos_start + signature_size));
+         
+//         qDebug() << "url:" << url;
 
          //find "#" if any
          //remove after # to the end of string
@@ -1558,7 +1676,7 @@ std::vector <std::string> extract_src_from_toc (const std::string &source, const
          if (pos_end != std::string::npos)
              url = url.substr (0, pos_part);
 
-         if (ends_with (url, "html") || ends_with (url, "xhtml"))
+         if (ends_with (url, "html") || ends_with (url, "htm") || ends_with (url, "xhtml") || ends_with (url, "xml"))
             {
              std::string url_to_add = prefix + url;
              result.push_back (url_to_add);
@@ -1576,21 +1694,29 @@ bool CTioEpub::load (const QString &fn)
 
   qDebug() << "CTioEpub::load " << fn;
 
+  data.clear();
+
+
   std::string fname = fn.toStdString();
   std::vector <std::string> tags;
 
   struct zip_t *zip = zip_open (fname.c_str(), 0, 'r');
-
+  
   if (! zip)
      return false;
-
+  
+  
   //read toc.ncx
 
   void *toc = NULL;
   size_t bufsize;
 
-   std::string subdir = "OEBPS/";
+  /*
+  std::string subdir = "OEBPS/";
 
+  if (zip_entry_open (zip, "toc.ncx") < 0)
+  
+  
   if (zip_entry_open (zip, "OEBPS/toc.ncx") < 0)
      {
       if (zip_entry_open (zip, "OPS/toc.ncx") < 0)
@@ -1598,7 +1724,27 @@ bool CTioEpub::load (const QString &fn)
 
       subdir = "OPS/";
      }
+*/
+      
+ 
+  
+  std::string subdir;
 
+  if (zip_entry_open (zip, "toc.ncx") < 0) //не можем открыть просто toc?
+     {
+      subdir = "OEBPS/";
+      
+      if (zip_entry_open (zip, "OEBPS/toc.ncx") < 0) //пробуем еще так
+         {
+          if (zip_entry_open (zip, "OPS/toc.ncx") < 0) //и так
+             return false;
+
+         subdir = "OPS/";
+        }
+     }
+      
+     
+ 
   zip_entry_read (zip, &toc, &bufsize);
 
   zip_entry_close (zip);
@@ -1606,6 +1752,7 @@ bool CTioEpub::load (const QString &fn)
   if (bufsize == 0)
     return false;
 
+  
  // done with toc
   std::string content ((char*)toc);
   free (toc);
@@ -1613,8 +1760,13 @@ bool CTioEpub::load (const QString &fn)
   std::vector <std::string> urls = extract_src_from_toc (content, subdir);
 //  remove_duplicates (urls);
 
+ 
+  
   //HERE WE ALREADY PARSED URLS
 
+//  qDebug() << "urls.size(): " << urls.size();
+
+  
   if (urls.size() == 0)
      return false;
 
@@ -1622,34 +1774,65 @@ bool CTioEpub::load (const QString &fn)
 
   //read urls from epub
 
+  
+  
   for (size_t i = 0; i < urls.size(); i++)
       {
         //check duplicated urls, skip dups
         if (i + 1 != urls.size())
            if (urls[i] == urls[i+1])
               continue;
+        
+       // qDebug() << "i: " << i;
+ 
 
 //       std::cout << "open: " << urls[i] << std::endl;
 
        void *temp = NULL;
 
        if (zip_entry_open (zip, urls[i].c_str()) >= 0)
-         {
-          zip_entry_read (zip, &temp, &bufsize);
-          zip_entry_close (zip);
+          {
+         //  qDebug() << "opened " << urls[i].c_str();
+  
+            
+           zip_entry_read (zip, &temp, &bufsize);
+           zip_entry_close (zip);
 
-          std::string st = (char*) temp;
-          std::string st_cleaned = html_strip (st);
+//           qDebug() << "readed and closed";
+           
+           std::string st; 
+           
+           if (temp)
+              st = (char*) temp;
+            
+            
+           //std::string st_cleaned = html_strip (st); 
 
+           std::string st_cleaned; 
+           
+          // if (ends_with (urls[i].c_str(), "xml") || ends_with (urls[i].c_str(), "xhtml"))
+              
+           
+           //st_cleaned = xml_strip (st); 
+              
+             st_cleaned =  xml_strip_remove_empty_lines (st);
+              
+           //else
+             //  st_cleaned = html_strip (st); 
+
+           
+  //         qDebug() << "cleanded";
+           
+           
           //print_lines (file_lines);
 
           //if (file_lines.size() > 0)
            //  lines.insert(std::end(lines), std::begin(file_lines), std::end(file_lines));
 
-          data += QString::fromStdString (st_cleaned);
-          data += "\n";
-          free (temp);
-         }
+           data += QString::fromStdString (st_cleaned);
+           data += "\n";
+           free (temp);
+          }
       }
 
   zip_close(zip);
