@@ -5,7 +5,7 @@
 ****                All the money you send will go to the QT5 project                          ****
 ===================================================================================================
 
-Tea v63.1.0   
+Tea v63.2.0   
 
  CONTENTS OF THIS FILE
  =====================
@@ -32,7 +32,7 @@ Tea v63.1.0
 1. INTRODUCTION
 ===============
 
-Welcome to tea v63.1.0 port for OS/2 and eComStation.
+Welcome to tea v63.2.0 port for OS/2 and eComStation.
 
 TEA is the Qt-based text editor for UNIX-like systems and Windows. 
 With an ultimate small size TEA provides you hundreds of functions. 
@@ -157,6 +157,10 @@ development, you can do so in one of the following ways:
 Compiled now with Qt v5.15.2
 
 Changelog:
+December 27 2024 Tea 63-2-0 is out!!
+     * Epub support fixed
+     * Wrong loading of e-book formats fixed
+
 June 09 2024 - TEA 63.1.0 is out! Fixes, fixes, fixes.
 
 May 11 2024 - TEA 63.0.1 is out! The spellchecker fix.

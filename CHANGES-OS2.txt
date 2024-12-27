@@ -1,5 +1,10 @@
 History of OS/2-specific changes for Tea
 ===========================================
+27-12-2024
+- Updated to latest version
+     * Epub support fixed
+     * Wrong loading of e-book formats fixed
+
 13-06-2024
 
 -Updated to latest version 63.1.0
