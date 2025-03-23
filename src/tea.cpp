@@ -1,5 +1,5 @@
 /***************************************************************************
- *   2000-2024 by Peter Semiletov                                          *
+ *   2000-2025 by Peter Semiletov                                          *
  *   peter.semiletov@gmail.com                                             *
 
 C++/Qt branch started at 08 November 2007
@@ -540,7 +540,7 @@ void CTEA::logmemo_double_click (const QString &txt)
   source_fname = source_dir + "/" + source_fname;
 
   log->no_jump = true;
-  CDocument *d = documents->open_file (source_fname, "UTF-8");
+  CDocument *d = documents->open_file_without_reload (source_fname, "UTF-8");
   log->no_jump = false;
 
   if (! d)
@@ -1310,7 +1310,7 @@ void CTEA::file_open_at_cursor()
       return;
      }
 
-  documents->open_file (fname, d->charset);
+  documents->open_file_without_reload (fname, d->charset);
 }
 
 
@@ -1334,7 +1334,7 @@ void CTEA::file_crapbook()
   if (! QFile::exists (fname_crapbook))
       qstring_save (fname_crapbook, tr ("you can put here notes, etc"));
 
-  documents->open_file (fname_crapbook, "UTF-8");
+  documents->open_file_without_reload (fname_crapbook, "UTF-8");
 }
 
 
@@ -1354,7 +1354,7 @@ void CTEA::file_notes()
   if (! file_exists (fname))
       qstring_save (fname, tr ("put your notes (for this file) here and they will be saved automatically"));
 
-  documents->open_file (fname, "UTF-8");
+  documents->open_file_without_reload (fname, "UTF-8");
 }
 
 
@@ -1558,6 +1558,25 @@ void CTEA::file_save_version()
 }
 
 
+void CTEA::file_save_all_existing()
+{
+  last_action = sender();
+
+  if (documents->items.size() == 0)
+     return;
+
+
+  for (int i = 0; i < documents->items.size(); i++)
+      {
+       CDocument *d = documents->items[i];
+       
+       if (file_exists (d->file_name) && d->document()->isModified())
+          d->file_save_with_name_plain (d->file_name);
+      
+      }
+}
+
+
 void CTEA::file_session_save_as()
 {
   last_action = sender();
@@ -1752,7 +1771,7 @@ void CTEA::file_find_obsolete_paths()
 void CTEA::file_open_bookmarks_file()
 {
   last_action = sender();
-  documents->open_file (fname_bookmarks, "UTF-8");
+  documents->open_file_without_reload (fname_bookmarks, "UTF-8");
 }
 
 
@@ -1772,7 +1791,7 @@ void CTEA::file_open_programs_file()
 
 #endif
 
-  documents->open_file (fname_programs, "UTF-8");
+  documents->open_file_without_reload (fname_programs, "UTF-8");
 }
 
 
@@ -5389,7 +5408,7 @@ void CTEA::ide_toggle_hs()
      return;
 
   if (file_exists (d->file_name))
-      documents->open_file (toggle_fname_header_source (d->file_name), d->charset);
+      documents->open_file_without_reload (toggle_fname_header_source (d->file_name), d->charset);
 }
 
 
@@ -6340,7 +6359,7 @@ void CTEA::help_show_news()
   if (QLocale::system().name().left(2) == "ru")
      fname = ":/NEWS-RU";
 
-  CDocument *d = documents->open_file (fname, "UTF-8");
+  CDocument *d = documents->open_file_without_reload (fname, "UTF-8");
   if (d)
      d->setReadOnly (true);
 }
@@ -6348,7 +6367,7 @@ void CTEA::help_show_news()
 
 void CTEA::help_show_todo()
 {
-  CDocument *d = documents->open_file (":/TODO", "UTF-8");
+  CDocument *d = documents->open_file_without_reload (":/TODO", "UTF-8");
   if (d)
      d->setReadOnly (true);
 }
@@ -6356,7 +6375,7 @@ void CTEA::help_show_todo()
 
 void CTEA::help_show_changelog()
 {
-  CDocument *d = documents->open_file (":/ChangeLog", "UTF-8");
+  CDocument *d = documents->open_file_without_reload (":/ChangeLog", "UTF-8");
   if (d)
      d->setReadOnly (true);
 }
@@ -6364,7 +6383,7 @@ void CTEA::help_show_changelog()
 
 void CTEA::help_show_gpl()
 {
-  CDocument *d = documents->open_file (":/COPYING", "UTF-8");
+  CDocument *d = documents->open_file_without_reload (":/COPYING", "UTF-8");
   if (d)
      d->setReadOnly (true);
 }
@@ -7138,12 +7157,15 @@ File menu
   menu_file->addAction (saveAct);
   menu_file->addAction (saveAsAct);
 
-  QMenu *tm = menu_file->addMenu (tr ("Save as different"));
+  QMenu *tm = menu_file->addMenu (tr ("Save more"));
   tm->setTearOffEnabled (true);
 
   add_to_menu (tm, tr ("Save .bak"), SLOT(file_save_bak()), "Ctrl+B");
   add_to_menu (tm, tr ("Save timestamped version"), SLOT(file_save_version()));
   add_to_menu (tm, tr ("Save session"), SLOT(file_session_save_as()));
+  add_to_menu (tm, tr ("Save all existing"), SLOT(file_save_all_existing));
+  
+  
 
   menu_file->addSeparator();
 
@@ -9457,7 +9479,7 @@ void CTEA::calendar_activated (const QDate &date)
       fresh = true;
      }
 
-  CDocument *d = documents->open_file (fname, "UTF-8");
+  CDocument *d = documents->open_file_without_reload (fname, "UTF-8");
   if (! d)
      return;
 
